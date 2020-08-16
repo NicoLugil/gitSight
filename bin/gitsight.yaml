@@ -1,0 +1,7 @@
+---
+# settings related to https://github.com/python-gitlab/python-gitlab
+gitlab:
+  config_file: ~/.python-gitlab.cfg
+  config_file_section: gitlab public
+  project_id: 19719852
+...
