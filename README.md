@@ -9,8 +9,18 @@ We are only getting started, there is much more to come...
 For now the code isn't nicely packaged yet. Install by 
 - downloading the repo
 - making sure you have the packages in requirements.txt, these are the versions that have been tested. Since we use very basic functionality, earlier versions are very likely to work as well
-- set the correct PYTHONPATH (to the main repo path, for example `export PYTHONPATH=<your_specific_path>/gitSight:$PYTHONPATH` in bash)
-- add gitSight's bin directory to your path (for example `export PATH=<your_specific_path>/gitSight/bin:$PATH` in bash)
+- set the required environment variables:
+  - create the environment variable '$GITSIGHT_HOME' and set it to the main repo path
+  - set the correct PYTHONPATH to '$GITSIGHT_HOME'
+  - add gitSight's bin directory to your path 
+  
+ ```
+ # bash example
+ export GITSIGHT_HOME=<your_specific_path>/gitSight
+ export PYTHONPATH=$GITSIGHT_HOME:$PYTHONPATH
+ export PATH=$GITSIGHT_HOME/bin:$PATH
+ ```
+
 
 # configuration
 
