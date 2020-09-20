@@ -49,7 +49,18 @@ The gitlab section relates to python-gitlab, see also the following section 'pyt
 
 ## python-gitlab configuration file
 
-Because we 
+Because we use [python-gitlab](https://github.com/python-gitlab/python-gitlab) to access the git database, we also need to have a configuration for this tool. This file should match with the 'gitlab.config_file' and 'gitlab.config_file_section' if the 'main YAML configuration file'. See the documentation of [python-gitlab](https://github.com/python-gitlab/python-gitlab) for possible options, but you can start with the following example, matching the YAML configuration file example:
+
+```
+[gitlab public]
+url = https://gitlab.com
+ssl_verify = true
+timeout = 5
+private_token = <here you need to fill in your private gitlab token>
+api_version = 4
+```
+
+See the gitlab documentation on how to create your private_token.
 
 
 
