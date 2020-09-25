@@ -7,6 +7,8 @@ import gitsight.burndown_chart
 
 import sys
 import os
+import shutil
+import pathlib
 
 def main():
 
@@ -25,6 +27,13 @@ def main():
     issues = project.issues.list()
     #print(f'Found {len(issues)} issues')
     #print(issues[0])
+
+    # put c3.js in place
+    # TODO: let users use their version
+    dirpath = pathlib.Path('c3')
+    if dirpath.exists() and dirpath.is_dir():
+        shutil.rmtree(dirpath)
+    shutil.copytree(os.path.join(os.environ['GITSIGHT_HOME'],'c3-0.7.20'), 'c3')
 
     # create burndown chart
     map=gitsight.util_issuedates.get_issues_created_and_closed_dates(issues)

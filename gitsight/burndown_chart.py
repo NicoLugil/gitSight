@@ -112,52 +112,63 @@ def create_plot(xy):
         nothing yet - will just dump html as output
     """
 
-    x='                    [\'x\''
-    y='                    [\'open issues\''
-    for pair in xy:
-        x+=(', '+pair[0].date().strftime('\'%Y-%m-%d\''))
-        y+=(', '+str(pair[1]))
-    x+='],\n'
-    y+='],\n'
+    x='[\'x\',\n            '
+    y='[\'open issues\',\n            '
+    for idx, pair in enumerate(xy):
+        nl=f''
+        if idx+1 != len(xy):
+            nl +=','
+        if ((idx+1) % 10 == 0):
+            nl += ' \\\n            '
+        x+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
+        y+=(str(pair[1])+nl)
+    x+='],'
+    y+=']'
 
-    s0="""
+    s_html=f"""
 <html>
   <head>
-    <link href="../c3-0.7.20/c3.css" rel="stylesheet" type="text/css">
+    <link href="c3/c3.css" rel="stylesheet" type="text/css">
   </head>
   <body>
     <div id="chart"></div>
 
     <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
-    <script src="../c3-0.7.20/c3.min.js"></script>
-    <script>
-        var chart = c3.generate({
-            data: {
-                x: 'x',
-
-                columns: [
-"""
-    s1="""                
-                ]
-            },
-            axis: {
-                x: {
-                    type: 'timeseries',
-                    tick: {
-                        format: '%Y-%m-%d',
-                        count: 10
-
-                    }
-                }
-            }
-        });
-
-        setTimeout(function () {chart.load(); }, 1000);
+    <script src="c3/c3.min.js"></script>
+    <script src="gs_openitems.js"></script>
 
     </script>
   </body>
 </html>
 """
+
+    s_js=f"""
+var chart = c3.generate(
+{{
+    data: 
+    {{
+        x: 'x',
+        columns:
+        [
+            {x}
+            {y}             
+        ]
+    }},
+    axis: 
+    {{
+        x: 
+        {{
+            type: 'timeseries',
+            tick: {{format: '%Y-%m-%d', count: 10}}
+        }}
+    }}
+}});
+
+setTimeout(function () {{chart.load(); }}, 1000);
+"""
+
     with open('index.html', 'w') as f:
-        print(s0+x+y+s1)
-        f.write(s0+x+y+s1)
+        f.write(s_html)
+    with open('gs_openitems.js', 'w') as f:
+        f.write(s_js)
+
