@@ -3,7 +3,7 @@ import gitlab
 import gitsight.commandline_parser
 import gitsight.configfile_parser
 import gitsight.util_issuedates
-import gitsight.burndown_chart
+import gitsight.open_issues
 
 import sys
 import os
@@ -35,8 +35,11 @@ def main():
         shutil.rmtree(dirpath)
     shutil.copytree(os.path.join(os.environ['GITSIGHT_HOME'],'c3-0.7.20'), 'c3')
 
-    # create burndown chart
+    # put gs.js in place
+    shutil.copyfile(os.path.join(os.environ['GITSIGHT_HOME'],'templates/gs.css'), 'gs.css')
+
+    # create open issues page
     map=gitsight.util_issuedates.get_issues_created_and_closed_dates(issues)
-    xy=gitsight.burndown_chart.create_burndown_list(map)
-    xy_bucketized=gitsight.burndown_chart.bucketize_dates(xy,'last')
-    gitsight.burndown_chart.create_plot(xy_bucketized)
+    xy=gitsight.open_issues.create_open_issues_list(map)
+    xy_bucketized=gitsight.open_issues.bucketize_dates(xy,'last')
+    gitsight.open_issues.create_plot(xy_bucketized)

@@ -1,5 +1,7 @@
-def create_burndown_list(iid_dates_map):
-    """Will create a list with burndown numbers
+import os
+
+def create_open_issues_list(iid_dates_map):
+    """Will create a list with open issues numbers
 
     Args:
         iid_dates_map: A dict mapping the issue's iid to a pair of 
@@ -41,7 +43,7 @@ def create_burndown_list(iid_dates_map):
 def bucketize_dates(xy, bucket_mode=None):
     """Allows reducing 'close together dates'
 
-    This function gets a list of xy pairs as from create_burndown_list
+    This function gets a list of xy pairs as from create_open_issues_list
     and allows reducing the set if multiple x values are 'on the same day'.
     In this way the returned list will have at maximum one entry for a particular day
     (unless bucket_mode=None)
@@ -101,7 +103,7 @@ def bucketize_dates(xy, bucket_mode=None):
     return new_list
 
 def create_plot(xy):
-    """ will create html with burndown chart
+    """ will create html with open issues chart
 
     Args:
         xy: a list containing arrays of size 2: 
@@ -111,6 +113,36 @@ def create_plot(xy):
     Returns:
         nothing yet - will just dump html as output
     """
+
+    ##################
+    ###### html ######
+    ##################
+    with open(os.path.join(os.environ['GITSIGHT_HOME'],'templates/open_issues.html'), 'r') as f:
+        s_html=f.read()
+
+    content=f"""    
+    <div class="w3-row w3-padding-64">
+        <div class="w3-container">
+          <h1 class="w3-text-black">Number of open issues</h1>
+          <p> Project</p>
+          <div id="chart" class="w3-margin"></div>
+        </div>
+        <div class="w3-container">
+          <p> Top 10 members</p>
+          <div id="chart2" class="w3-margin"></div>
+        </div>
+    </div>
+"""
+    s_html=s_html.replace('--gs_replace_me--',content)
+
+    with open('open_issues.html', 'w') as f:
+        f.write(s_html)
+
+    ##################
+    ######  js  ######
+    ##################
+    with open(os.path.join(os.environ['GITSIGHT_HOME'],'templates/open_issues.js'), 'r') as f:
+        s_js=f.read()
 
     x='[\'x\',\n            '
     y='[\'open issues\',\n            '
@@ -125,50 +157,9 @@ def create_plot(xy):
     x+='],'
     y+=']'
 
-    s_html=f"""
-<html>
-  <head>
-    <link href="c3/c3.css" rel="stylesheet" type="text/css">
-  </head>
-  <body>
-    <div id="chart"></div>
+    s_js=s_js.replace('--gs_replace_me_chart--',x+y)
+    s_js=s_js.replace('--gs_replace_me_chart2--',x+y)
 
-    <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
-    <script src="c3/c3.min.js"></script>
-    <script src="gs_openitems.js"></script>
-
-    </script>
-  </body>
-</html>
-"""
-
-    s_js=f"""
-var chart = c3.generate(
-{{
-    data: 
-    {{
-        x: 'x',
-        columns:
-        [
-            {x}
-            {y}             
-        ]
-    }},
-    axis: 
-    {{
-        x: 
-        {{
-            type: 'timeseries',
-            tick: {{format: '%Y-%m-%d', count: 10}}
-        }}
-    }}
-}});
-
-setTimeout(function () {{chart.load(); }}, 1000);
-"""
-
-    with open('index.html', 'w') as f:
-        f.write(s_html)
-    with open('gs_openitems.js', 'w') as f:
+    with open('gs_open_issues.js', 'w') as f:
         f.write(s_js)
 
