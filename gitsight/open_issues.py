@@ -117,7 +117,7 @@ def create_plot(xy):
     ##################
     ###### html ######
     ##################
-    with open(os.path.join(os.environ['GITSIGHT_HOME'],'templates/open_issues.html'), 'r') as f:
+    with open(os.path.join(os.environ['GITSIGHT_HOME'],'templates/main.html'), 'r') as f:
         s_html=f.read()
 
     content=f"""    
@@ -125,11 +125,11 @@ def create_plot(xy):
         <div class="w3-container">
           <h1 class="w3-text-black">Number of open issues</h1>
           <p> Project</p>
-          <div id="chart" class="w3-margin"></div>
+          <div id="chart0" class="w3-margin"></div>
         </div>
         <div class="w3-container">
           <p> Top 10 members</p>
-          <div id="chart2" class="w3-margin"></div>
+          
         </div>
     </div>
 """
@@ -141,11 +141,15 @@ def create_plot(xy):
     ##################
     ######  js  ######
     ##################
-    with open(os.path.join(os.environ['GITSIGHT_HOME'],'templates/open_issues.js'), 'r') as f:
+    with open(os.path.join(os.environ['GITSIGHT_HOME'],'templates/multi_xy_line_chart.js'), 'r') as f:
         s_js=f.read()
 
-    x='[\'x\',\n            '
-    y='[\'open issues\',\n            '
+    xs='            \'open issues\': \'x\''
+    s_js=s_js.replace('--gs_replace_me_xs--',xs)
+
+
+    x='[\'x\',\n             '
+    y='            [\'open issues\',\n              '
     for idx, pair in enumerate(xy):
         nl=f''
         if idx+1 != len(xy):
@@ -154,11 +158,18 @@ def create_plot(xy):
             nl += ' \\\n            '
         x+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
         y+=(str(pair[1])+nl)
-    x+='],'
+    x+='],\n'
     y+=']'
+    s_js=s_js.replace('--gs_replace_me_columns--',x+y)
 
-    s_js=s_js.replace('--gs_replace_me_chart--',x+y)
-    s_js=s_js.replace('--gs_replace_me_chart2--',x+y)
+    x_axis="""
+            type: 'timeseries',
+            tick: {format: '%Y-%m-%d', count: 10}
+"""
+    s_js=s_js.replace('--gs_replace_me_x_axis--',x_axis)
+
+    chart='chart0'
+    s_js=s_js.replace('--gs_replace_me_bindto--',chart)
 
     with open('gs_open_issues.js', 'w') as f:
         f.write(s_js)
