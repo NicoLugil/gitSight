@@ -67,7 +67,7 @@ Because we use [python-gitlab](https://github.com/python-gitlab/python-gitlab) t
 url = https://gitlab.com
 ssl_verify = true
 timeout = 5
-private_token = <here you need to fill in your private gitlab token>
+private_token = <here you need to fill in your private gitlab token - without the brackets>
 api_version = 4
 ```
 
