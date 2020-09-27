@@ -40,6 +40,63 @@ def create_open_issues_list(iid_dates_map):
     #print(r)
     return r
 
+def create_opened_and_closed_issues_list(iid_dates_map):
+    """Will create a list with the number of opened and closed issues
+
+    In contrast to create_open_issues_list, this will return 2 monotonic lists
+    Opened will start at 0 and every time an issue is opened it increments, closing does not matter
+    Closed will start at 0 and every time an issue is closed it increments
+
+    Args:
+        iid_dates_map: A dict mapping the issue's iid to a pair of 
+        datetime objects. Index 0 is the creation date, index 1 the closed date. 
+        If not yet closed, index1 must be None
+
+    Returns:
+        ro:
+            a list with an array of size 2:
+            - index0 is a datetime object
+            - index1 is a number representing the number of opened issues at the date/time
+               of index0
+        rc:
+            a list with an array of size 2:
+            - index0 is a datetime object
+            - index1 is a number representing the number of closed issues at the date/time
+               of index0
+        the lists will be sorted in 'incrementing time'
+    """
+  
+    my_delta_dict_opened={}   # dict: key: all dates when something changed, value: delta of opened issues at that date
+    my_delta_dict_closed={}   # dict: key: all dates when something changed, value: delta of closed issues at that date
+    for k,v in iid_dates_map.items():
+        if v[0] in my_delta_dict_opened:
+            my_delta_dict_opened[v[0]]+=1
+        else:
+            my_delta_dict_opened[v[0]]=1
+        if v[1]:
+            if v[1] in my_delta_dict_closed:
+                my_delta_dict_closed[v[1]]+=1
+            else:
+                my_delta_dict_closed[v[1]]=1
+    # list of sorted dates
+    sorted_dates_opened=sorted(my_delta_dict_opened.keys())
+    sorted_dates_closed=sorted(my_delta_dict_closed.keys())
+    # build abolute number of opened issues, corresponding to the dates
+    ro=[]
+    acc=0
+    for d in sorted_dates_opened:
+        acc=acc+my_delta_dict_opened[d]
+        pair=[d, acc]
+        ro.append(pair)
+    rc=[]
+    acc=0
+    for d in sorted_dates_closed:
+        acc=acc+my_delta_dict_closed[d]
+        pair=[d, acc]
+        rc.append(pair)
+    #print(r)
+    return ro, rc
+
 def bucketize_dates(xy, bucket_mode=None):
     """Allows reducing 'close together dates'
 
@@ -102,7 +159,7 @@ def bucketize_dates(xy, bucket_mode=None):
     # print('\n')
     return new_list
 
-def create_plot(xy):
+def create_plot(xy,xy_opened,xy_closed):
     """ will create html with open issues chart
 
     Args:
@@ -113,6 +170,11 @@ def create_plot(xy):
     Returns:
         nothing yet - will just dump html as output
     """
+
+    print(xy)
+    print('------------')
+    print(xy_opened)
+
 
     ##################
     ###### html ######
@@ -144,12 +206,14 @@ def create_plot(xy):
     with open(os.path.join(os.environ['GITSIGHT_HOME'],'templates/multi_xy_line_chart.js'), 'r') as f:
         s_js=f.read()
 
-    xs='            \'open issues\': \'x\''
+    xs='\'remaining\': \'x\',\n'
+    xs+='            \'opened\': \'xo\',\n'
+    xs+='            \'closed\': \'xc\''
     s_js=s_js.replace('--gs_replace_me_xs--',xs)
 
 
     x='[\'x\',\n             '
-    y='            [\'open issues\',\n              '
+    y='            [\'remaining\',\n              '
     for idx, pair in enumerate(xy):
         nl=f''
         if idx+1 != len(xy):
@@ -159,8 +223,35 @@ def create_plot(xy):
         x+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
         y+=(str(pair[1])+nl)
     x+='],\n'
-    y+=']'
-    s_js=s_js.replace('--gs_replace_me_columns--',x+y)
+    y+='],\n'
+    #
+    xo='            [\'xo\',\n             '
+    yo='            [\'opened\',\n              '
+    for idx, pair in enumerate(xy_opened):
+        nl=f''
+        if idx+1 != len(xy_opened):
+            nl +=','
+        if ((idx+1) % 10 == 0):
+            nl += ' \\\n            '
+        xo+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
+        yo+=(str(pair[1])+nl)
+    xo+='],\n'
+    yo+='],\n'
+    #
+    xc='            [\'xc\',\n             '
+    yc='            [\'closed\',\n              '
+    for idx, pair in enumerate(xy_closed):
+        nl=f''
+        if idx+1 != len(xy_closed):
+            nl +=','
+        if ((idx+1) % 10 == 0):
+            nl += ' \\\n            '
+        xc+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
+        yc+=(str(pair[1])+nl)
+    xc+='],\n'
+    yc+=']'
+    #
+    s_js=s_js.replace('--gs_replace_me_columns--',x+xo+xc+y+yo+yc)
 
     x_axis="""
             type: 'timeseries',
