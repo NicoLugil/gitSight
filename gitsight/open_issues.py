@@ -171,11 +171,6 @@ def create_plot(xy,xy_opened,xy_closed):
         nothing yet - will just dump html as output
     """
 
-    print(xy)
-    print('------------')
-    print(xy_opened)
-
-
     ##################
     ###### html ######
     ##################
@@ -219,7 +214,7 @@ def create_plot(xy,xy_opened,xy_closed):
         if idx+1 != len(xy):
             nl +=','
         if ((idx+1) % 10 == 0):
-            nl += ' \\\n            '
+            nl += ' \n            '
         x+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
         y+=(str(pair[1])+nl)
     x+='],\n'
@@ -232,7 +227,7 @@ def create_plot(xy,xy_opened,xy_closed):
         if idx+1 != len(xy_opened):
             nl +=','
         if ((idx+1) % 10 == 0):
-            nl += ' \\\n            '
+            nl += ' \n            '
         xo+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
         yo+=(str(pair[1])+nl)
     xo+='],\n'
@@ -245,7 +240,7 @@ def create_plot(xy,xy_opened,xy_closed):
         if idx+1 != len(xy_closed):
             nl +=','
         if ((idx+1) % 10 == 0):
-            nl += ' \\\n            '
+            nl += ' \n            '
         xc+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
         yc+=(str(pair[1])+nl)
     xc+='],\n'

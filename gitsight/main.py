@@ -24,8 +24,8 @@ def main():
     gl = gitlab.Gitlab.from_config(config['gitlab']['config_file_section'], 
         [os.path.abspath(os.path.expanduser(config['gitlab']['config_file']))])
     project = gl.projects.get(config['gitlab']['project_id'])   
-    issues = project.issues.list()
-    #print(f'Found {len(issues)} issues')
+    issues = project.issues.list(all=True)
+    print(f'Found {len(issues)} issues')
     #print(issues[0])
 
     # put c3.js in place
