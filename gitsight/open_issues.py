@@ -1,4 +1,5 @@
 import os
+from mako.template import Template
 
 def create_open_issues_list(iid_dates_map):
     """Will create a list with open issues numbers
@@ -174,8 +175,6 @@ def create_plot(xy,xy_opened,xy_closed):
     ##################
     ###### html ######
     ##################
-    with open(os.path.join(os.environ['GITSIGHT_HOME'],'templates/main.html'), 'r') as f:
-        s_html=f.read()
 
     content=f"""    
     <div class="w3-row w3-padding-64">
@@ -190,21 +189,21 @@ def create_plot(xy,xy_opened,xy_closed):
         </div>
     </div>
 """
-    s_html=s_html.replace('--gs_replace_me--',content)
 
+    mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/main.html'))
+    s_html=mytemplate.render(content=content)
     with open('open_issues.html', 'w') as f:
         f.write(s_html)
 
     ##################
     ######  js  ######
     ##################
-    with open(os.path.join(os.environ['GITSIGHT_HOME'],'templates/multi_xy_line_chart.js'), 'r') as f:
-        s_js=f.read()
+
 
     xs='\'remaining\': \'x\',\n'
     xs+='            \'opened\': \'xo\',\n'
     xs+='            \'closed\': \'xc\''
-    s_js=s_js.replace('--gs_replace_me_xs--',xs)
+    #s_js=s_js.replace('--gs_replace_me_xs--',xs)
 
 
     x='[\'x\',\n             '
@@ -246,17 +245,19 @@ def create_plot(xy,xy_opened,xy_closed):
     xc+='],\n'
     yc+=']'
     #
-    s_js=s_js.replace('--gs_replace_me_columns--',x+xo+xc+y+yo+yc)
+    #s_js=s_js.replace('--gs_replace_me_columns--',x+xo+xc+y+yo+yc)
 
     x_axis="""
             type: 'timeseries',
             tick: {format: '%Y-%m-%d', count: 10}
 """
-    s_js=s_js.replace('--gs_replace_me_x_axis--',x_axis)
+    #s_js=s_js.replace('--gs_replace_me_x_axis--',x_axis)
 
     chart='chart0'
-    s_js=s_js.replace('--gs_replace_me_bindto--',chart)
+    #s_js=s_js.replace('--gs_replace_me_bindto--',chart)
 
+    mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/multi_xy_line_chart.js'))
+    s_js=mytemplate.render(xs=xs, columns=x+xo+xc+y+yo+yc, x_axis=x_axis, chart=chart)
     with open('gs_open_issues.js', 'w') as f:
         f.write(s_js)
 

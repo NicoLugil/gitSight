@@ -1,15 +1,15 @@
 
-var --gs_replace_me_bindto-- = c3.generate(
+var ${chart} = c3.generate(
 {
     data: 
     {
         xs: 
         {
-            --gs_replace_me_xs--
+            ${xs}
         },
         columns:
         [
-            --gs_replace_me_columns--  
+            ${columns}  
         ]
     },
     zoom: {
@@ -31,9 +31,9 @@ var --gs_replace_me_bindto-- = c3.generate(
     },
     axis: 
     {
-        x: { --gs_replace_me_x_axis-- }
+        x: { ${x_axis} }
     },
-    bindto: '#--gs_replace_me_bindto--'
+    bindto: '#${chart}'
 });
 
 setTimeout(function () {chart.load(); }, 1000);
