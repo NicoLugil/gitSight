@@ -1,5 +1,6 @@
 import os
 from mako.template import Template
+from .. data import graphic_data_classes
 
 def create_open_issues_list(iid_dates_map):
     """Will create a list with open issues numbers
@@ -199,65 +200,17 @@ def create_plot(xy,xy_opened,xy_closed):
     ######  js  ######
     ##################
 
-
-    xs='\'remaining\': \'x\',\n'
-    xs+='            \'opened\': \'xo\',\n'
-    xs+='            \'closed\': \'xc\''
-    #s_js=s_js.replace('--gs_replace_me_xs--',xs)
-
-
-    x='[\'x\',\n             '
-    y='            [\'remaining\',\n              '
+    lines = graphic_data_classes.gs_lines(x_type='timeseries',x_count=10)
+    x=[];
+    y=[];
     for idx, pair in enumerate(xy):
-        nl=f''
-        if idx+1 != len(xy):
-            nl +=','
-        if ((idx+1) % 10 == 0):
-            nl += ' \n            '
-        x+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
-        y+=(str(pair[1])+nl)
-    x+='],\n'
-    y+='],\n'
-    #
-    xo='            [\'xo\',\n             '
-    yo='            [\'opened\',\n              '
-    for idx, pair in enumerate(xy_opened):
-        nl=f''
-        if idx+1 != len(xy_opened):
-            nl +=','
-        if ((idx+1) % 10 == 0):
-            nl += ' \n            '
-        xo+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
-        yo+=(str(pair[1])+nl)
-    xo+='],\n'
-    yo+='],\n'
-    #
-    xc='            [\'xc\',\n             '
-    yc='            [\'closed\',\n              '
-    for idx, pair in enumerate(xy_closed):
-        nl=f''
-        if idx+1 != len(xy_closed):
-            nl +=','
-        if ((idx+1) % 10 == 0):
-            nl += ' \n            '
-        xc+=(pair[0].date().strftime('\'%Y-%m-%d\'')+nl)
-        yc+=(str(pair[1])+nl)
-    xc+='],\n'
-    yc+=']'
-    #
-    #s_js=s_js.replace('--gs_replace_me_columns--',x+xo+xc+y+yo+yc)
-
-    x_axis="""
-            type: 'timeseries',
-            tick: {format: '%Y-%m-%d', count: 10}
-"""
-    #s_js=s_js.replace('--gs_replace_me_x_axis--',x_axis)
-
-    chart='chart0'
-    #s_js=s_js.replace('--gs_replace_me_bindto--',chart)
+        x.append(pair[0])
+        y.append(pair[1])
+    lines.add_line('remaining',x,y)
 
     mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/multi_xy_line_chart.js'))
-    s_js=mytemplate.render(xs=xs, columns=x+xo+xc+y+yo+yc, x_axis=x_axis, chart=chart)
+    #s_js=mytemplate.render(lines=lines, columns=x+xo+xc+y+yo+yc, x_axis=x_axis, chart=chart)
+    s_js=mytemplate.render(lines=lines, chart='chart0')
     with open('gs_open_issues.js', 'w') as f:
         f.write(s_js)
 

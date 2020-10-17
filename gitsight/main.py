@@ -3,7 +3,7 @@ import gitlab
 import gitsight.commandline_parser
 import gitsight.configfile_parser
 import gitsight.util_issuedates
-import gitsight.open_issues
+import gitsight.creators.open_issues
 
 import sys
 import os
@@ -40,9 +40,9 @@ def main():
 
     # create open issues page
     map=gitsight.util_issuedates.get_issues_created_and_closed_dates(issues)
-    xy_open=gitsight.open_issues.create_open_issues_list(map)
-    xy_open_bucketized=gitsight.open_issues.bucketize_dates(xy_open,'last')
-    xy_opened,xy_closed=gitsight.open_issues.create_opened_and_closed_issues_list(map)
-    xy_opened_bucketized=gitsight.open_issues.bucketize_dates(xy_opened,'last')
-    xy_closed_bucketized=gitsight.open_issues.bucketize_dates(xy_closed,'last')
-    gitsight.open_issues.create_plot(xy_open_bucketized,xy_opened_bucketized,xy_closed_bucketized)
+    xy_open=gitsight.creators.open_issues.create_open_issues_list(map)
+    xy_open_bucketized=gitsight.creators.open_issues.bucketize_dates(xy_open,'last')
+    xy_opened,xy_closed=gitsight.creators.open_issues.create_opened_and_closed_issues_list(map)
+    xy_opened_bucketized=gitsight.creators.open_issues.bucketize_dates(xy_opened,'last')
+    xy_closed_bucketized=gitsight.creators.open_issues.bucketize_dates(xy_closed,'last')
+    gitsight.creators.open_issues.create_plot(xy_open_bucketized,xy_opened_bucketized,xy_closed_bucketized)

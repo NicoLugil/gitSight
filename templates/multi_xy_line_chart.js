@@ -5,11 +5,24 @@ var ${chart} = c3.generate(
     {
         xs: 
         {
-            ${xs}
+        % for i in range(lines.get_number_of_lines()):
+            '${lines.get_label(i)}': 'x${i}',
+        % endfor      
         },
         columns:
         [
-            ${columns}  
+        % for i in range(lines.get_number_of_lines()):
+            ['x${i}',
+            % for x in lines.get_x_in_c3_format(i):
+             ${x},
+            %endfor
+            ],
+            ['${lines.get_label(i)}',
+            % for y in lines.get_y(i):
+             ${y},
+            % endfor
+            ],
+        % endfor
         ]
     },
     zoom: {
@@ -31,7 +44,15 @@ var ${chart} = c3.generate(
     },
     axis: 
     {
-        x: { ${x_axis} }
+        x: 
+        { 
+        % if lines.x_type=='timeseries':
+            type: 'timeseries',
+            tick: {format: '%Y-%m-%d', count: ${lines.x_count}}
+        % else:
+            tick: {count: ${lines.x_count}}
+        % endif
+        }
     },
     bindto: '#${chart}'
 });
