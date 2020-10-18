@@ -2,13 +2,14 @@ import gitlab
 
 import gitsight.commandline_parser
 import gitsight.configfile_parser
-import gitsight.util_issuedates
-import gitsight.creators.open_issues
+import gitsight.creators.issues_vs_time
+import gitsight.data.data_classes
 
 import sys
 import os
 import shutil
 import pathlib
+import yaml
 
 def main():
 
@@ -25,8 +26,10 @@ def main():
         [os.path.abspath(os.path.expanduser(config['gitlab']['config_file']))])
     project = gl.projects.get(config['gitlab']['project_id'])   
     issues = project.issues.list(all=True)
-    print(f'Found {len(issues)} issues')
-    #print(issues[0])
+    gs_issues = gitsight.data.data_classes.convert_gitlab_issues_to_gs_issues(issues)
+    del issues
+    #print(yaml.dump(gs_issues))
+    print(f'Found {len(gs_issues)} issues')
 
     # put c3.js in place
     # TODO: let users use their version
@@ -38,11 +41,5 @@ def main():
     # put gs.js in place
     shutil.copyfile(os.path.join(os.environ['GITSIGHT_HOME'],'templates/gs.css'), 'gs.css')
 
-    # create open issues page
-    map=gitsight.util_issuedates.get_issues_created_and_closed_dates(issues)
-    xy_open=gitsight.creators.open_issues.create_open_issues_list(map)
-    xy_open_bucketized=gitsight.creators.open_issues.bucketize_dates(xy_open,'last')
-    xy_opened,xy_closed=gitsight.creators.open_issues.create_opened_and_closed_issues_list(map)
-    xy_opened_bucketized=gitsight.creators.open_issues.bucketize_dates(xy_opened,'last')
-    xy_closed_bucketized=gitsight.creators.open_issues.bucketize_dates(xy_closed,'last')
-    gitsight.creators.open_issues.create_plot(xy_open_bucketized,xy_opened_bucketized,xy_closed_bucketized)
+    # create pages
+    gitsight.creators.issues_vs_time.create_page(gs_issues)

@@ -33,6 +33,15 @@ class gs_lines:
         m_line=data_classes.xy(label,x,y)
         self.lines.append(m_line)
 
+    def add_xy_line(self, xy):
+        """ add a line by passing an xy object
+
+        Args:
+            xy: data_classes.xy object to be added
+        """
+
+        self.lines.append(xy)
+
     def get_x_in_c3_format(self, index):
         """ will return x as array in format as desired by c3
 
