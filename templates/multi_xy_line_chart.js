@@ -1,24 +1,25 @@
+% for plot in plots:
 
-var ${chart} = c3.generate(
+var chart${loop.index} = c3.generate(
 {
     data: 
     {
         xs: 
         {
-        % for i in range(lines.get_number_of_lines()):
-            '${lines.get_label(i)}': 'x${i}',
+        % for i in range(plot.get_number_of_lines()):
+            '${plot.get_label(i)}': 'x${i}',
         % endfor      
         },
         columns:
         [
-        % for i in range(lines.get_number_of_lines()):
+        % for i in range(plot.get_number_of_lines()):
             ['x${i}',
-            % for x in lines.get_x_in_c3_format(i):
+            % for x in plot.get_x_in_c3_format(i):
              ${x},
-            %endfor
+            % endfor
             ],
-            ['${lines.get_label(i)}',
-            % for y in lines.get_y(i):
+            ['${plot.get_label(i)}',
+            % for y in plot.get_y(i):
              ${y},
             % endfor
             ],
@@ -46,16 +47,18 @@ var ${chart} = c3.generate(
     {
         x: 
         { 
-        % if lines.x_type=='timeseries':
+        % if plot.x_type=='timeseries':
             type: 'timeseries',
-            tick: {format: '%Y-%m-%d', count: ${lines.x_count}}
+            tick: {format: '%Y-%m-%d', count: ${plot.x_count}}
         % else:
-            tick: {count: ${lines.x_count}}
+            tick: {count: ${plot.x_count}}
         % endif
         }
     },
-    bindto: '#${chart}'
+    bindto: '#chart${loop.index}'
 });
+
+% endfor
 
 setTimeout(function () {chart.load(); }, 1000);
 

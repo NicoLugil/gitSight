@@ -21,15 +21,23 @@ def main():
     config=gitsight.configfile_parser.get_config(args.config)
     #print(f'Config:\n{config}')
 
-    # get issues from the project
     gl = gitlab.Gitlab.from_config(config['gitlab']['config_file_section'], 
         [os.path.abspath(os.path.expanduser(config['gitlab']['config_file']))])
     project = gl.projects.get(config['gitlab']['project_id'])   
+
+    # get users
+    users = project.users.list()
+    gs_users = gitsight.data.data_classes.convert_gitlab_users_to_gs_users(users)
+    del users
+    print(f'Found {gs_users.get_number_of_users()} users')
+
+    # get issues from the project
     issues = project.issues.list(all=True)
-    gs_issues = gitsight.data.data_classes.convert_gitlab_issues_to_gs_issues(issues)
-    del issues
+    gs_issues = gitsight.data.data_classes.convert_gitlab_issues_to_gs_issues(issues, gs_users)
     #print(yaml.dump(gs_issues))
-    print(f'Found {len(gs_issues)} issues')
+    del issues
+    print(f'Found {gs_issues.get_number_of_issues()} issues')
+
 
     # put c3.js in place
     # TODO: let users use their version

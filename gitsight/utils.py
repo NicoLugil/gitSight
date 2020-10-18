@@ -20,3 +20,4 @@ def from_gitlab_api_date_to_local_datetime_format(date):
     t_local=t.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
     #print(t_local)
     return t_local
+

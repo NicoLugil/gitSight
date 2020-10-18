@@ -1,11 +1,26 @@
 from . import data_classes
 
-class gs_lines:
-    """ 
-    A class that bundles all data related to (multiple) to be plotted lines
+class gs_page:
+    """
+    A class bunding data like gs_plot for multiple plots on 1 page
     """
 
-    def __init__(self, x_type='timeseries', x_count=10):
+    def __init__(self, title='<Page Title>'):
+        self.title=title
+        self.plots=[]   # will be array of gs_plot
+
+    def add_plot(self, plot):
+        self.plots.append(plot)
+
+    def get_number_of_plots(self):
+        return len(self.plots)
+
+class gs_plot:
+    """ 
+    A class that bundles all data related to (multiple) to be plotted lines (single plot)
+    """
+
+    def __init__(self, x_type='timeseries', x_count=10, title='<Plot Title>'):
         """ gs_line constructor
 
         Args:
@@ -18,7 +33,8 @@ class gs_lines:
         else:
             self.x_format=None
         self.x_count=x_count
-        self.lines=[]
+        self.lines=[]                    # array of data_classes.xy objects
+        self.title=title
 
     def add_line(self, label='no-label', x=None, y=None):
         """ add a line by giving its individual components

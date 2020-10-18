@@ -1,13 +1,14 @@
 import os
+import yaml
 from mako.template import Template
 from .. data import graphic_data_classes
 from .. data import data_classes
 
-def create_page(issues):
+def create_page(gs_issues):
     """ Creates html page for issues vs time
 
     Args:
-        issues: all the issues of the project
+        gs_issues: all the issues of the project, gs_issues object
 
     Created files:
         gs_issues_vs_time.js
@@ -15,18 +16,27 @@ def create_page(issues):
 
     """
 
-    lines = graphic_data_classes.gs_lines(x_type='timeseries',x_count=10)
+    m_page = graphic_data_classes.gs_page(title='Evolution of issues in time')
 
-    xy_remaining=bucketize_dates(create_open_issues_vs_time_list(issues),'last')
-    lines.add_xy_line(xy_remaining)
+    # project plot
+    plot = graphic_data_classes.gs_plot(x_type='timeseries',x_count=10,title='Project view')
+    m_page.add_plot(plot)
 
-    xy_opened,xy_closed=create_opened_and_closed_issues_list(issues)
+    xy_remaining=bucketize_dates(create_open_issues_vs_time_list(gs_issues.issues),'last')
+    plot.add_xy_line(xy_remaining)
+
+    xy_opened,xy_closed=create_opened_and_closed_issues_list(gs_issues.issues)
     xy_opened_bucketized=bucketize_dates(xy_opened,'last')
-    lines.add_xy_line(xy_opened_bucketized)
+    plot.add_xy_line(xy_opened_bucketized)
     xy_closed_bucketized=bucketize_dates(xy_closed,'last')
-    lines.add_xy_line(xy_closed_bucketized)
+    plot.add_xy_line(xy_closed_bucketized)
 
-    create_plot(lines)
+    # per person plot
+    # 
+
+
+
+    create(m_page)
 
 
 def create_open_issues_vs_time_list(issues):
@@ -175,11 +185,11 @@ def bucketize_dates(xy, bucket_mode=None):
     #xy.print()
     return xy
 
-def create_plot(lines):
+def create(page):
     """ will create html with issues vs time plots
 
     Args:
-        lines: gs_lines object
+        page: gs_page object
 
     Returns:
         nothing yet - will just dump html as output
@@ -197,14 +207,13 @@ def create_plot(lines):
           <div id="chart0" class="w3-margin"></div>
         </div>
         <div class="w3-container">
-          <p> Top 10 members</p>
-          
+          <p> Top pp10 members</p>
         </div>
     </div>
 """
 
     mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/main.html'))
-    s_html=mytemplate.render(content=content)
+    s_html=mytemplate.render(page=page)
     with open('issues_vs_time.html', 'w') as f:
         f.write(s_html)
 
@@ -214,7 +223,8 @@ def create_plot(lines):
 
     mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/multi_xy_line_chart.js'))
     #s_js=mytemplate.render(lines=lines, columns=x+xo+xc+y+yo+yc, x_axis=x_axis, chart=chart)
-    s_js=mytemplate.render(lines=lines, chart='chart0')
+    #print(yaml.dump(page))
+    s_js=mytemplate.render(plots=page.plots)
     with open('gs_issues_vs_time.js', 'w') as f:
         f.write(s_js)
 
