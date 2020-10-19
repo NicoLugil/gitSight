@@ -38,6 +38,13 @@ def main():
     del issues
     print(f'Found {gs_issues.get_number_of_issues()} issues')
 
+    # we often will need the issues per user, create this dict, also put the project issues in this dict (key -1)
+    # keys will be either:
+    #   user id
+    #   -1 : for all the project issues
+    #   None: issues without assignee
+    issues_per_user=gitsight.data.data_classes.get_issues_per_user(gs_users, gs_issues)
+    del gs_issues
 
     # put c3.js in place
     # TODO: let users use their version
@@ -50,4 +57,4 @@ def main():
     shutil.copyfile(os.path.join(os.environ['GITSIGHT_HOME'],'templates/gs.css'), 'gs.css')
 
     # create pages
-    gitsight.creators.issues_vs_time.create_page(gs_issues)
+    gitsight.creators.issues_vs_time.create_page(gs_users,issues_per_user)

@@ -1,4 +1,5 @@
 from .. import utils
+import yaml
 
 ########################################### classes ###########################################
 
@@ -142,7 +143,7 @@ class gs_filter:
         """ constructor, allows setting filter
 
         Args:
-            assignee_id: assignee to filter by. '*' passes all. Must be a user id or None (for issues that have no assigneee)
+            assignee_id: assignee to filter by. '*' passes all. Must be a user id or None (for issues that have no assignee)
 
         """
 
@@ -209,5 +210,41 @@ def convert_gitlab_users_to_gs_users(gitlab_users):
         users.add_user(user)
     return users 
 
-def get_number_of_open_issues_per_user(users, issues):
-    """ return for each of the users how many open issues he has """
+def get_issues_per_user(users, issues):
+    """ return for each of the users how many open issues he has 
+
+    Args:
+        users: a gs_users object
+        issues: a gs_issues object
+
+    Returns:
+        a dict with as key: user-id or None (for issues without user) or -1 (for all the project issues)
+                       value: a gs_issues object with the issues for that user 
+
+    """
+
+    d={}
+    d[None]=gs_issues()
+    d[-1]=gs_issues()
+    for u in users.users:
+        assert u.id != -1, "Was not expecting an assignee id of -1"
+        d[u.id] = gs_issues()
+
+    for i in issues.issues:
+        d[-1].add_issue(i)
+        if i.assignee==None:
+            d[None].add_issue(i)
+        else:
+            assert i.assignee.id in d, "Unexpected error fgfikmbmbgler"
+            d[i.assignee.id].add_issue(i)
+
+    print(f'Total number of issues = {d[-1].get_number_of_issues()}')
+    print(f'Unassigned number of issues = {d[None].get_number_of_issues()}')
+    for k,v in d.items():
+        if k==None or k==-1:
+            pass
+        else:
+            print(f'Issues assigned to {users.get_user_by_id(k).name} = {v.get_number_of_issues()}')
+
+    #print(yaml.dump(d))
+    return d

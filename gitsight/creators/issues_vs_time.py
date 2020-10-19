@@ -4,11 +4,13 @@ from mako.template import Template
 from .. data import graphic_data_classes
 from .. data import data_classes
 
-def create_page(gs_issues):
+def create_page(users,issues_per_user):
     """ Creates html page for issues vs time
 
     Args:
-        gs_issues: all the issues of the project, gs_issues object
+        issues_per_user: dict as returned by get_issues_per_user:
+            key can be: None, -1 or user id
+            value: gs_issues object with the issues for the user identified by the key
 
     Created files:
         gs_issues_vs_time.js
@@ -17,27 +19,38 @@ def create_page(gs_issues):
     """
 
     m_page = graphic_data_classes.gs_page(title='Evolution of issues in time')
+    m_page.add_plot(plot_one_user(issues_per_user[-1],'Project'))
+    m_page.add_plot(plot_one_user(issues_per_user[None],'Unassigned'))
+    for user_id,user_issues in issues_per_user.items():
 
-    # project plot
-    plot = graphic_data_classes.gs_plot(x_type='timeseries',x_count=10,title='Project view')
-    m_page.add_plot(plot)
+        if user_id==None or user_id==-1:
+            continue
+        m_page.add_plot(plot_one_user(user_issues,users.get_user_by_id(user_id).name))
+    create(m_page)
 
-    xy_remaining=bucketize_dates(create_open_issues_vs_time_list(gs_issues.issues),'last')
+def plot_one_user(issues,title):
+    """ returns a single plot (gs_plot) for the given issues. 
+
+    Args:
+        issues for this user (gs_issues)
+        title: title to use
+
+    Returns:
+        gs_plot object
+    """
+
+    plot = graphic_data_classes.gs_plot(x_type='timeseries',x_count=10,title=title)
+
+    xy_remaining=bucketize_dates(create_open_issues_vs_time_list(issues.issues),'last')
     plot.add_xy_line(xy_remaining)
 
-    xy_opened,xy_closed=create_opened_and_closed_issues_list(gs_issues.issues)
+    xy_opened,xy_closed=create_opened_and_closed_issues_list(issues.issues)
     xy_opened_bucketized=bucketize_dates(xy_opened,'last')
     plot.add_xy_line(xy_opened_bucketized)
     xy_closed_bucketized=bucketize_dates(xy_closed,'last')
     plot.add_xy_line(xy_closed_bucketized)
 
-    # per person plot
-    # 
-
-
-
-    create(m_page)
-
+    return plot
 
 def create_open_issues_vs_time_list(issues):
     """Will create an xy object list with #open issues vs time
