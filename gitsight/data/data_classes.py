@@ -21,12 +21,14 @@ class gs_issue:
         creation_date: date issue was created, type datetime in local time
         closed_date: date issue was closed, type datetime in local time, or None if not yet closed
         assignee: a gs_user object, or None if the issue has no assignee
+        author: a gs_user, author of the issue
         """
 
         self.iid=git_issue.iid
         self.creation_date=utils.from_gitlab_api_date_to_local_datetime_format(git_issue.created_at)
         self.closed_date=None if git_issue.closed_at==None else utils.from_gitlab_api_date_to_local_datetime_format(git_issue.closed_at)
         self.assignee=None if git_issue.assignee==None else users.get_user_by_id(git_issue.assignee['id'])
+        self.author=users.get_user_by_id(git_issue.author['id'])
 
 
 class gs_issues:
@@ -77,7 +79,7 @@ class gs_user:
 
 class gs_users:
     """
-    Collection of all users
+    Collection of users
     """
 
     def __init__(self):
@@ -100,6 +102,11 @@ class gs_users:
     def get_number_of_users(self):
         return len(self.users)
 
+    def is_user(self,u_id):
+        """ given a u_id, return if this user is in this object, if yes return true, else false"""
+        if u_id in self.user_dict:
+            return True
+        return False
 
 class xy:
     """ 
@@ -210,9 +217,40 @@ def convert_gitlab_users_to_gs_users(gitlab_users):
         users.add_user(user)
     return users 
 
+
+def drop_idle_users(users,issues):
+    """ Only retain users that are involved in the project issues
+
+    Args:
+        users: a gs_users object
+        issues: a gs_issues object
+
+    Returns:
+        a new gs_users object with only the retained users
+    
+    To be involved means that a user is either:
+    - assignee
+    - author
+
+    """
+
+    new_users=gs_users()
+    for u in users.users:
+        found=False
+        for i in issues.issues:
+            if i.assignee==None:
+                continue
+            if i.assignee.id==u.id or i.author.id==u.id:
+                found=True
+                break
+        if found==True:
+            new_users.add_user(u)
+    return new_users
+
+
+
 def get_issues_per_user(users, issues):
     """ return for each of the users how many open issues he has 
-
     Args:
         users: a gs_users object
         issues: a gs_issues object

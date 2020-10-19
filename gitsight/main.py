@@ -26,7 +26,7 @@ def main():
     project = gl.projects.get(config['gitlab']['project_id'])   
 
     # get users
-    users = project.users.list()
+    users = project.users.list(all=True)
     gs_users = gitsight.data.data_classes.convert_gitlab_users_to_gs_users(users)
     del users
     print(f'Found {gs_users.get_number_of_users()} users')
@@ -34,7 +34,8 @@ def main():
     # get issues from the project
     issues = project.issues.list(all=True)
     gs_issues = gitsight.data.data_classes.convert_gitlab_issues_to_gs_issues(issues, gs_users)
-    #print(yaml.dump(gs_issues))
+    active_users=gitsight.data.data_classes.drop_idle_users(gs_users,gs_issues)
+    del gs_users
     del issues
     print(f'Found {gs_issues.get_number_of_issues()} issues')
 
@@ -43,7 +44,8 @@ def main():
     #   user id
     #   -1 : for all the project issues
     #   None: issues without assignee
-    issues_per_user=gitsight.data.data_classes.get_issues_per_user(gs_users, gs_issues)
+    # This also drops users with no assigned issues
+    issues_per_user=gitsight.data.data_classes.get_issues_per_user(active_users, gs_issues)
     del gs_issues
 
     # put c3.js in place
@@ -57,4 +59,4 @@ def main():
     shutil.copyfile(os.path.join(os.environ['GITSIGHT_HOME'],'templates/gs.css'), 'gs.css')
 
     # create pages
-    gitsight.creators.issues_vs_time.create_page(gs_users,issues_per_user)
+    gitsight.creators.issues_vs_time.create_page(active_users,issues_per_user)
