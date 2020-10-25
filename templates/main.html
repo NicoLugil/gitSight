@@ -54,9 +54,19 @@ html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif;}
   <div class="w3-row w3-padding-64">
       <div class="w3-container">
         <h1 class="w3-text-black">${page.title}</h1>
+
+        <div class="w3-dropdown-hover w3-light-grey">
+          <button class="w3-button">Navigate to user</button>
+          <div class="w3-dropdown-content w3-bar-block w3-card-4">
+            % for plot in page.plots:
+            <a href="#${plot.title}" class="w3-bar-item w3-button">${plot.title}</a>
+            % endfor
+          </div>
+        </div>
+
       </div>
       % for plot in page.plots:
-      <div class="w3-container">
+      <div class="w3-container" id="${plot.title}">
         <h4 class="w3-text-black">${plot.title}</h4>
         <div id="chart${loop.index}" class="w3-margin"></div>
       </div>

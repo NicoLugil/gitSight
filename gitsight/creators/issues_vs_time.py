@@ -23,7 +23,7 @@ def create_page(users,issues_per_user):
     m_page.add_plot(plot_one_user(issues_per_user[None],'Unassigned'))
 
     # the other ones: sort from most to least open issues
-    sorted_ipu = dict(sorted(issues_per_user.items(), key=lambda item: item[1].get_number_of_issues()))
+    sorted_ipu = dict(sorted(issues_per_user.items(), key=lambda item: item[1].get_number_of_issues(), reverse=True))
     for user_id,user_issues in sorted_ipu.items():
 
         if user_id==None or user_id==-1:
