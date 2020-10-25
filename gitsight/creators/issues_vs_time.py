@@ -21,7 +21,10 @@ def create_page(users,issues_per_user):
     m_page = graphic_data_classes.gs_page(title='Evolution of issues in time')
     m_page.add_plot(plot_one_user(issues_per_user[-1],'Project'))
     m_page.add_plot(plot_one_user(issues_per_user[None],'Unassigned'))
-    for user_id,user_issues in issues_per_user.items():
+
+    # the other ones: sort from most to least open issues
+    sorted_ipu = dict(sorted(issues_per_user.items(), key=lambda item: item[1].get_number_of_issues()))
+    for user_id,user_issues in sorted_ipu.items():
 
         if user_id==None or user_id==-1:
             continue
@@ -35,14 +38,15 @@ def plot_one_user(issues,title):
         issues for this user (gs_issues)
         title: title to use
 
+
     Returns:
         gs_plot object
     """
 
-    plot = graphic_data_classes.gs_plot(x_type='timeseries',x_count=10,title=title)
+    plot = graphic_data_classes.gs_plot(x_type='timeseries',x_count=10,title=title,default_type='line')
 
     xy_remaining=bucketize_dates(create_open_issues_vs_time_list(issues.issues),'last')
-    plot.add_xy_line(xy_remaining)
+    plot.add_xy_line(xy_remaining,type_override='area')
 
     xy_opened,xy_closed=create_opened_and_closed_issues_list(issues.issues)
     xy_opened_bucketized=bucketize_dates(xy_opened,'last')
@@ -211,19 +215,6 @@ def create(page):
     ##################
     ###### html ######
     ##################
-
-    content=f"""    
-    <div class="w3-row w3-padding-64">
-        <div class="w3-container">
-          <h1 class="w3-text-black">Evolution of issues in time</h1>
-          <p> Project</p>
-          <div id="chart0" class="w3-margin"></div>
-        </div>
-        <div class="w3-container">
-          <p> Top pp10 members</p>
-        </div>
-    </div>
-"""
 
     mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/main.html'))
     s_html=mytemplate.render(page=page)

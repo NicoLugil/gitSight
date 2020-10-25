@@ -24,7 +24,16 @@ var chart${loop.index} = c3.generate(
             % endfor
             ],
         % endfor
-        ]
+        ],
+        type: '${plot.default_type}',
+        types:
+        {
+        % for i in range(plot.get_number_of_lines()):
+            % if plot.get_type(i) is not None:
+            ${plot.get_label(i)}: '${plot.get_type(i)}',
+            % endif
+        % endfor
+        }
     },
     zoom: {
         enabled: true
