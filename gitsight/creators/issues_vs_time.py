@@ -218,7 +218,7 @@ def create(page):
 
     mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/main.html'))
     s_html=mytemplate.render(page=page)
-    with open('issues_vs_time.html', 'w') as f:
+    with open('dashboard.html', 'w') as f:                 # for now this is our only page --> call it dashboard.html
         f.write(s_html)
 
     ##################

@@ -7,9 +7,11 @@ import gitsight.data.data_classes
 
 import sys
 import os
+import errno
 import shutil
 import pathlib
 import yaml
+import pickle
 
 def main():
 
@@ -21,9 +23,21 @@ def main():
     config=gitsight.configfile_parser.get_config(args.config)
     #print(f'Config:\n{config}')
 
-    gl = gitlab.Gitlab.from_config(config['gitlab']['config_file_section'], 
-        [os.path.abspath(os.path.expanduser(config['gitlab']['config_file']))])
-    project = gl.projects.get(config['gitlab']['project_id'])   
+    if args.loadfile:
+        print(f'Loading git project from {args.loadfile}')
+        with open(args.loadfile, 'rb') as outfile:
+            project = pickle.load(outfile)        
+    else:    
+        gl = gitlab.Gitlab.from_config(config['gitlab']['config_file_section'], 
+            [os.path.abspath(os.path.expanduser(config['gitlab']['config_file']))])
+        project = gl.projects.get(config['gitlab']['project_id'])   
+
+    if args.dumpfile:
+        print(f'Dumping git project in {args.dumpfile}')
+        with open(args.dumpfile, 'wb') as outfile:
+            pickle.dump(project, outfile)
+        with open(args.dumpfile+'.yaml', 'w') as outfile:
+            yaml.dump(project, outfile)  # for debug   
 
     # get users
     users = project.users.list(all=True)
@@ -60,3 +74,12 @@ def main():
 
     # create pages
     gitsight.creators.issues_vs_time.create_page(active_users,issues_per_user)
+
+    # point index.html to main page
+    try:
+        os.symlink('dashboard.html','index.html')
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            pass
+        else:
+            raise
