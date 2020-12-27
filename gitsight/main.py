@@ -4,14 +4,14 @@ import gitsight.commandline_parser
 import gitsight.configfile_parser
 import gitsight.creators.issues_vs_time
 import gitsight.data.data_classes
+import gitsight.utils
 
 import sys
 import os
 import errno
 import shutil
-import pathlib
+import pathlib 
 import yaml
-import pickle
 
 def main():
 
@@ -24,43 +24,40 @@ def main():
     #print(f'Config:\n{config}')
 
     if args.loadfile:
-        print(f'Loading git project from {args.loadfile}')
-        with open(args.loadfile, 'rb') as outfile:
-            project = pickle.load(outfile)        
+        [project, issues_per_user, active_users] = gitsight.utils.load_project_from_file(args.loadfile)  
     else:    
         gl = gitlab.Gitlab.from_config(config['gitlab']['config_file_section'], 
             [os.path.abspath(os.path.expanduser(config['gitlab']['config_file']))])
         project = gl.projects.get(config['gitlab']['project_id'])   
 
+        # get users
+        users = project.users.list(all=True)
+        gs_users = gitsight.data.data_classes.convert_gitlab_users_to_gs_users(users)
+        del users
+        print(f'Found {gs_users.get_number_of_users()} users')
+
+        # get issues from the project
+        issues = project.issues.list(all=True)
+        gs_issues = gitsight.data.data_classes.convert_gitlab_issues_to_gs_issues(issues, gs_users)
+        active_users=gitsight.data.data_classes.drop_idle_users(gs_users,gs_issues)
+        del gs_users
+        del issues
+        print(f'Found {gs_issues.get_number_of_issues()} issues')
+
+        # we often will need the issues per user, create this dict, also put the project issues in this dict (key -1)
+        # keys will be either:
+        #   user id
+        #   -1 : for all the project issues
+        #   None: issues without assignee
+        # This also drops users with no assigned issues
+        issues_per_user=gitsight.data.data_classes.get_issues_per_user(active_users, gs_issues)
+        del gs_issues
+
     if args.dumpfile:
-        print(f'Dumping git project in {args.dumpfile}')
-        with open(args.dumpfile, 'wb') as outfile:
-            pickle.dump(project, outfile)
-        with open(args.dumpfile+'.yaml', 'w') as outfile:
-            yaml.dump(project, outfile)  # for debug   
+        gitsight.utils.dump_project_to_file(project, issues_per_user, active_users, args.dumpfile)
 
-    # get users
-    users = project.users.list(all=True)
-    gs_users = gitsight.data.data_classes.convert_gitlab_users_to_gs_users(users)
-    del users
-    print(f'Found {gs_users.get_number_of_users()} users')
-
-    # get issues from the project
-    issues = project.issues.list(all=True)
-    gs_issues = gitsight.data.data_classes.convert_gitlab_issues_to_gs_issues(issues, gs_users)
-    active_users=gitsight.data.data_classes.drop_idle_users(gs_users,gs_issues)
-    del gs_users
-    del issues
-    print(f'Found {gs_issues.get_number_of_issues()} issues')
-
-    # we often will need the issues per user, create this dict, also put the project issues in this dict (key -1)
-    # keys will be either:
-    #   user id
-    #   -1 : for all the project issues
-    #   None: issues without assignee
-    # This also drops users with no assigned issues
-    issues_per_user=gitsight.data.data_classes.get_issues_per_user(active_users, gs_issues)
-    del gs_issues
+    # dump to yaml for debug - TODO: turn off
+    gitsight.utils.dump_project_to_yaml(project, issues_per_user, active_users, 'gitsight.yaml')
 
     # put c3.js in place
     # TODO: let users use their version
