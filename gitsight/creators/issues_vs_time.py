@@ -4,35 +4,44 @@ from mako.template import Template
 from .. data import graphic_data_classes
 from .. data import data_classes
 
-def create_page(users,issues_per_user):
+def create_page(users,issues_per_user,config):
     """ Creates html page for issues vs time
 
     Args:
+        users: gs_users object
         issues_per_user: dict as returned by get_issues_per_user:
             key can be: None, -1 or user id
             value: gs_issues object with the issues for the user identified by the key
+            config: config for this page
+
 
     Created files:
-        gs_issues_vs_time.js
-        issues_vs_time.html
+        gs_time.js
+        time.html
 
     """
 
-    m_page = graphic_data_classes.gs_page(title='Evolution of issues in time')
-    m_page.add_plot(plot_one_user(issues_per_user[-1],'Project'))
-    m_page.add_plot(plot_one_user(issues_per_user[None],'Unassigned'))
+    print('time...', end='')
+    m_page = graphic_data_classes.gs_page(title='Evolution of issues in time',n_columns=config['columns'])
+    plot_cnt=0;
+    m_page.add_plot(plot_one_user(issues_per_user[-1],'Project'),col=plot_cnt%config['columns'])
+    plot_cnt += 1
+    m_page.add_plot(plot_one_user(issues_per_user[None],'Unassigned'),col=plot_cnt%config['columns'])
+    plot_cnt += 1
+    m_page.add_js('gs_time.js')
 
     # the other ones: sort from most to least open issues
     sorted_ipu = dict(sorted(issues_per_user.items(), key=lambda item: item[1].get_number_of_issues(), reverse=True))
     for user_id,user_issues in sorted_ipu.items():
-
         if user_id==None or user_id==-1:
             continue
-        m_page.add_plot(plot_one_user(user_issues,users.get_user_by_id(user_id).name))
+        m_page.add_plot(plot_one_user(user_issues,users.get_user_by_id(user_id).name),col=plot_cnt%config['columns'])
+        plot_cnt += 1
     create(m_page)
+    print('done')
 
 def plot_one_user(issues,title):
-    """ returns a single plot (gs_plot) for the given issues. 
+    """ returns a single plot (gs_line_plot) for the given issues. 
 
     Args:
         issues for this user (gs_issues)
@@ -40,10 +49,10 @@ def plot_one_user(issues,title):
 
 
     Returns:
-        gs_plot object
+        gs_line_plot object
     """
 
-    plot = graphic_data_classes.gs_plot(x_type='timeseries',x_count=10,title=title,default_type='line')
+    plot = graphic_data_classes.gs_line_plot(x_type='timeseries',x_count=10,title=title,default_type='line')
 
     xy_remaining=bucketize_dates(create_open_issues_vs_time_list(issues.issues),'last')
     plot.add_xy_line(xy_remaining,type_override='area')
@@ -218,7 +227,7 @@ def create(page):
 
     mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/main.html'))
     s_html=mytemplate.render(page=page)
-    with open('dashboard.html', 'w') as f:                 # for now this is our only page --> call it dashboard.html
+    with open('time.html', 'w') as f:                
         f.write(s_html)
 
     ##################
@@ -229,6 +238,6 @@ def create(page):
     #s_js=mytemplate.render(lines=lines, columns=x+xo+xc+y+yo+yc, x_axis=x_axis, chart=chart)
     #print(yaml.dump(page))
     s_js=mytemplate.render(plots=page.plots)
-    with open('gs_issues_vs_time.js', 'w') as f:
+    with open('gs_time.js', 'w') as f:
         f.write(s_js)
 

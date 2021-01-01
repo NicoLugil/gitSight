@@ -3,6 +3,8 @@ import gitlab
 import gitsight.commandline_parser
 import gitsight.configfile_parser
 import gitsight.creators.issues_vs_time
+import gitsight.creators.dashboard
+import gitsight.creators.people
 import gitsight.data.data_classes
 import gitsight.utils
 
@@ -53,11 +55,14 @@ def main():
         issues_per_user=gitsight.data.data_classes.get_issues_per_user(active_users, gs_issues)
         del gs_issues
 
+    if args.anonimize:
+        gitsight.utils.anonimize(active_users)
+
     if args.dumpfile:
         gitsight.utils.dump_project_to_file(project, issues_per_user, active_users, args.dumpfile)
 
     # dump to yaml for debug - TODO: turn off
-    gitsight.utils.dump_project_to_yaml(project, issues_per_user, active_users, 'gitsight.yaml')
+    gitsight.utils.dump_project_to_yaml(project, issues_per_user, active_users, 'gs_project.yaml')
 
     # put c3.js in place
     # TODO: let users use their version
@@ -70,7 +75,9 @@ def main():
     shutil.copyfile(os.path.join(os.environ['GITSIGHT_HOME'],'templates/gs.css'), 'gs.css')
 
     # create pages
-    gitsight.creators.issues_vs_time.create_page(active_users,issues_per_user)
+    gitsight.creators.dashboard.create_page(active_users,issues_per_user,config['pages']['dashboard'])
+    gitsight.creators.issues_vs_time.create_page(active_users,issues_per_user,config['pages']['time'])
+    gitsight.creators.people.create_page(active_users,issues_per_user,config['pages']['people'])
 
     # point index.html to main page
     try:

@@ -45,7 +45,7 @@ class gs_issues:
     def get_number_of_issues(self):
         return len(self.issues)
 
-    def filter(filter):
+    def filter(self,filter):
         """ 
         returns a new gs_issues object, with only the issues passing the filter
 
@@ -54,12 +54,12 @@ class gs_issues:
 
         """
         filtered_issues = gs_issues()
-        for i in self.issues():
+        for i in self.issues:
             if filter.filter(i) is not None:
-                filtered_issues.append(i)
-            else:
-                print('filtered')
+                filtered_issues.add_issue(i)
+        return filtered_issues
 
+################################################################################3
 
 class gs_user:
     """
@@ -80,6 +80,9 @@ class gs_user:
 class gs_users:
     """
     Collection of users
+
+    One the one holds an array self.users[] which is an array of gs_user_objects
+    But it also has a self.user_dict which is a dict with as key the user id and value the gs_user object
     """
 
     def __init__(self):
@@ -137,27 +140,37 @@ class xy:
         for idx, x in enumerate(self.x):
             print(f"{idx}   {x} {self.y[idx]}") 
 
+class label_value_pair:
+    """
+    A class bundling a label and a value
+    """
+
+    def __init__(self, label='no-label', value=None):
+        self.label=label
+        self.value=value
+
 class gs_filter:
     """
     A class to represent a filter which can be used to filter gs_issues
 
-    Each member of the class is used as filter member. Issues matching all the filter mebers are kept.
+    Each member of the class is used as filter member. Issues matching all the filter members are kept.
     To not filter by a member: member should be '*'
 
     """
 
-    def __init__(self, assignee_id='*'):
+    def __init__(self, assignee_id='*', closed_date='*'):
         """ constructor, allows setting filter
 
         Args:
-            assignee_id: assignee to filter by. '*' passes all. Must be a user id or None (for issues that have no assignee)
+            assignee_id: assignee id to filter by. '*' passes all. Must be a user id or None (for issues that have no assignee)
 
         """
 
         self.assignee_id=assignee_id
+        self.closed_date=closed_date
 
-    def filter(gs_issue):
-        """ Apllies the filter to a signel issue
+    def filter(self,gs_issue):
+        """ Aplies the filter to a single issue
 
         Args:
             gs_issue: gs_issue object that is being checked if it passes the filter
@@ -166,21 +179,25 @@ class gs_filter:
             if it passes the filter: the given gs_issue, if not: None
 
         """
-        if self.assignee == '*':
-            return gs_issue
-        if self.assignee_id == None:
-            # we want to keep issues without assignee
-            if gs_issue.assignee == None:
-                return gs_issue
-        if gs_issue.assignee == None:
-            # issue has no assignee
-            # if filter was also None, the above would already have returned -> return None
+
+        # assignee_id filter
+        if self.assignee_id == '*' or (self.assignee_id == None and gs_issue.assignee == None) or self.assignee_id == gs_issue.assignee.id:
+            #print('assignee_id: pass')
+            pass
+        else:
             return None
-        if self.assignee_id == gs_issue.assignee.id:
-            return gs_issue
-        return None
 
+        # closed_date filter
+        #print(f'closed_date: {self.closed_date} <> {gs_issue.closed_date}')
+        if self.closed_date == '*' or self.closed_date == gs_issue.closed_date:
+            #print('closed_date: pass')
+            pass
+        else:
+            return None
 
+        return gs_issue
+
+        
 ########################################### methods ###########################################
 
 def convert_gitlab_issues_to_gs_issues(gitlab_issues, users):
@@ -250,7 +267,7 @@ def drop_idle_users(users,issues):
 
 
 def get_issues_per_user(users, issues):
-    """ return for each of the users how many open issues he has 
+    """ return a dict with key a user id (or -1 or None) and as value a gs_issues object with issues for that user 
     Args:
         users: a gs_users object
         issues: a gs_issues object
@@ -286,3 +303,17 @@ def get_issues_per_user(users, issues):
 
     #print(yaml.dump(d))
     return d
+
+# we use this filter often -> make specialized method for it
+def filter_open_issues(issues):
+    """ given a gs_issues object, retain only the open (non closed) issues
+    
+    Args:
+        issues: a gs_issues object
+
+    Returns:
+        a new gs_issues object with only the issues that were not yet closed
+    """
+
+    m_filter=gs_filter(assignee_id='*', closed_date=None)
+    return issues.filter(m_filter)

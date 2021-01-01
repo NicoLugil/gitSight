@@ -28,9 +28,9 @@ html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif;}
 <div class="w3-top">
   <div class="w3-bar w3-theme w3-top w3-left-align w3-large">
     <a class="w3-bar-item w3-button w3-right w3-hide-large w3-hover-white w3-large w3-theme-l1" href="javascript:void(0)" onclick="w3_open()"><i class="fa fa-bars"></i></a>
-    <a href="#" class="w3-bar-item w3-button gs-red">gitSight</a>
-    <a href="#" class="w3-bar-item w3-button w3-hide-small w3-hover-white">Contact</a>
-    <a href="#" class="w3-bar-item w3-button w3-hide-small w3-hover-white">Help</a>
+    <a href="https://gitlab.com/NicoLugil/gitSight" class="w3-bar-item w3-button gs-red">gitSight</a>
+    <a href="https://gitlab.com/NicoLugil/gitSight" class="w3-bar-item w3-button w3-hide-small w3-hover-white">Contact</a>
+    <a href="https://gitlab.com/NicoLugil/gitSight" class="w3-bar-item w3-button w3-hide-small w3-hover-white">Help</a>
   </div>
 </div>
 
@@ -39,10 +39,11 @@ html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif;}
   <a href="javascript:void(0)" onclick="w3_close()" class="w3-right w3-xlarge w3-padding-large w3-hover-black w3-hide-large" title="Close Menu">
     <i class="fa fa-remove"></i>
   </a>
-  <a class="w3-bar-item w3-button w3-hover-black" href="#">Time</a>
-  <a class="w3-bar-item w3-button w3-hover-black" href="#">Issue durations</a>
-  <a class="w3-bar-item w3-button w3-hover-black" href="#">Labels</a>
-  <a class="w3-bar-item w3-button w3-hover-black" href="#">People</a>
+  <a class="w3-bar-item w3-button w3-hover-black" href="dashboard.html">Dashboard</a>
+  <a class="w3-bar-item w3-button w3-hover-black" href="time.html">Time</a>
+  <a class="w3-bar-item w3-button w3-hover-black" href="people.html">People</a>
+  <a class="w3-bar-item w3-button w3-hover-black" href="issue_durations#">Issue durations (TODO)</a>
+  <a class="w3-bar-item w3-button w3-hover-black" href="labels#">Labels (TODO)</a>
 </nav>
 
 <!-- Overlay effect when opening sidebar on small screens -->
@@ -63,12 +64,18 @@ html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif;}
             % endfor
           </div>
         </div>
-
       </div>
-      % for plot in page.plots:
-      <div class="w3-container" id="${plot.title}">
-        <h4 class="w3-text-black">${plot.title}</h4>
-        <div id="chart${loop.index}" class="w3-margin"></div>
+
+      % for col in range(page.n_col):
+      <div class="w3-col s${int(round(12/page.n_col))} w3-center">
+        % for plot in page.plots:
+          %if page.col[loop.index]==col:
+        <div class="w3-container" id="${plot.title}">
+          <h4 class="w3-text-black">${plot.title}</h4>
+          <div id="chart${loop.index}" class="w3-margin"></div>
+        </div>
+          %endif
+        %endfor
       </div>
       %endfor
   </div>
@@ -108,7 +115,10 @@ function w3_close() {
 
 <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
 <script src="c3/c3.min.js"></script>
-<script src="gs_issues_vs_time.js"></script>
+<!-- page specific js files -->
+% for js in page.js:
+<script src=${js}></script>
+%endfor
 
 </body>
 </html>

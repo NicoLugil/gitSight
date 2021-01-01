@@ -79,3 +79,51 @@ def load_project_from_file(filename):
     issues_per_user=d['issues_per_user']
 
     return project, issues_per_user, active_users
+
+def anonimize(active_users):
+    """ Replace the name and username by Alice in Wonderland characters
+
+    Args:
+        active_users
+    """
+
+    fchars=[
+        'Time',
+        'The white Queen',
+        'Alice',
+        'Bill',
+        'Catapiller',
+        'Cheshire-Cat',
+        'Dinah',
+        'Mad Hatter',
+        'Dodo',
+        'Doorknob',
+        'Dormouse',
+        'March Hare',
+        'Queen of Hearts',
+        'Tweedle Dee',
+        'Tweedle Dum',
+        'White Rabbit',
+        'Hamish',
+        'Ms.Kingsly',
+        'Eaglet',
+        'Young Bill the Lizard',
+        'Puppy',
+        'Fish-Footman',
+        'Frog-Footman',
+        'Duchess',
+        'King of Hearts',
+        'Knave of Hearts',
+        'Three Sisters ',
+        'Gryphon',
+        'Mary Ann',
+        'Mock Turtle'
+    ]
+
+    for idx, u in enumerate(active_users.users):
+        if idx<len(fchars):
+            u.name=fchars[idx]
+            u.username=fchars[idx].replace(' ','').lower()
+        else:
+            u.name=f'User{idx}'
+            u.username=u.name

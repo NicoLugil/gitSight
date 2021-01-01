@@ -4,4 +4,15 @@ gitlab:
   config_file: ~/.python-gitlab.cfg
   config_file_section: gitlab public
   project_id: 19719852
+
+# page related settings
+pages:
+  dashboard:
+    columns: 2
+  time:
+    columns: 2
+  people:
+    columns: 1
+
+
 ...

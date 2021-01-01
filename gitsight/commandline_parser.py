@@ -5,5 +5,6 @@ def get_commandline_args():
     parser.add_argument('-c','--config', dest='config', action='store', default='gitsight.yaml', help='gitsight yaml config file to use')
     parser.add_argument('--loadfile', dest='loadfile', action='store', help='load project from this file instead of querying a git server, create file with --dumpfile')
     parser.add_argument('--dumpfile', dest='dumpfile', action='store', help='dump project to this file after querying the git server')
+    parser.add_argument('--anonimize', dest='anonimize', action='store_true', help='anonimize user names after loading git project')
     args = parser.parse_args()
     return args

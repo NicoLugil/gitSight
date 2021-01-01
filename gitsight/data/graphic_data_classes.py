@@ -1,21 +1,36 @@
 from . import data_classes
+from enum import Enum, auto
 
 class gs_page:
     """
-    A class bunding data like gs_plot for multiple plots on 1 page
+    A class bunding data like gs_line_plot for multiple plots on 1 page
     """
 
-    def __init__(self, title='<Page Title>'):
+    def __init__(self, title='<Page Title>', n_columns=1):
         self.title=title
-        self.plots=[]   # will be array of gs_plot
+        self.plots=[]   # will be array of gs_line_plot
+        self.col=[]     # for each plot, in which column it needs to go
+        self.js=[]     # array of .js files to add
+        allowed_n_columns=[1,2,3,4,6,12]
+        if n_columns not in allowed_n_columns:
+            raise f'number of columns must be from {allowed_n_columns}'
+        self.n_col=n_columns   # columns
 
-    def add_plot(self, plot):
+    def add_plot(self, plot, col=0):
         self.plots.append(plot)
+        self.col.append(col)
 
     def get_number_of_plots(self):
         return len(self.plots)
 
-class gs_plot:
+    def add_js(self, js):
+        self.js.append(js)
+
+class gs_plot_type(Enum):
+    LINE = auto()
+    PIE = auto()
+
+class gs_line_plot:
     """ 
     A class that bundles all data related to (multiple) to be plotted lines (single plot)
     """
@@ -28,6 +43,7 @@ class gs_plot:
             x_count: number of ticks
             default_type: the default style used for all 'lines' (see c3.js data.type for possibilities)
         """
+        self.plot_type=gs_plot_type.LINE
         self.x_type=x_type
         if x_type=='timeseries':
             self.x_format='%Y-%m-%d'
@@ -46,7 +62,7 @@ class gs_plot:
             label: string
             x: array of data for x-axis
             y: array of data for y-axis
-            type_override: use this type for this 'line', overriding the default_type of the gs_plot ctor
+            type_override: use this type for this 'line', overriding the default_type of the gs_line_plot ctor
 
         """
 
@@ -60,7 +76,7 @@ class gs_plot:
 
         Args:
             xy: data_classes.xy object to be added
-            type_override: use this type for this 'line', overriding the default_type of the gs_plot ctor
+            type_override: use this type for this 'line', overriding the default_type of the gs_line_plot ctor
         """
 
         self.lines.append(xy)
@@ -103,3 +119,40 @@ class gs_plot:
     def get_number_of_lines(self):
         return len(self.lines)
 
+class gs_pie_plot:
+    """ 
+    A class that bundles all data related to a single pie plot
+    """
+
+    def __init__(self, title='<Plot Title>'):
+        """ gs_pie_plot constructor
+
+        Args:
+            title: title of the plot
+        """
+        self.plot_type=gs_plot_type.PIE
+        self.title=title
+        self.parts=[]
+
+    def add_part(self, label, value):
+        """ add a part of a pie chart, given a label and value (='size of the part')
+
+        Args:
+            label: string
+            value: decimal number
+
+        """
+
+        m_part=data_classes.label_value_pair(label,value)
+        self.parts.append(m_part)
+
+    def get_label(self, index):
+        m_part=self.parts[index]
+        return m_part.label
+
+    def get_value(self, index):
+        m_part=self.parts[index]
+        return m_part.value
+
+    def get_number_of_parts(self):
+        return len(self.parts)
