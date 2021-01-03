@@ -45,11 +45,20 @@ This is the file passed via the -c/--config command line option. It is the main 
 
 ```
 ---
-# settings related to python-gitlab
+# settings related to https://github.com/python-gitlab/python-gitlab
 gitlab:
   config_file: ~/.python-gitlab.cfg
   config_file_section: gitlab public
   project_id: 19719852
+
+# page related settings
+pages:
+  dashboard:
+    columns: 2
+  time:
+    columns: 2
+  people:
+    columns: 1
 ...
 ```
 
@@ -57,6 +66,9 @@ The gitlab section relates to python-gitlab, see also the following section 'pyt
 - gitlab.config_file: the path to the python-gitlab config file
 - config_file_section: the section in that config file to use
 - project_id: the project ID of the project you want to let this tool run on. You can find this in gitlab's web interface -> Project overview
+
+The pages section has some setting that alter how each of the pages get generated.
+- columns: sets how many columns to use for the page
 
 ## python-gitlab configuration file
 
@@ -74,6 +86,9 @@ api_version = 4
 See the gitlab documentation on how to create your private_token.
 
 
+# example output
 
+![](images/dashboard.png)
+![](images/time.png)
 
 
