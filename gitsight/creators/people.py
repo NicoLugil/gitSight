@@ -23,14 +23,14 @@ def create_page(users,issues_per_user,config):
     print('people...', end='')
     m_page = graphic_data_classes.gs_page(title='People statistics',n_columns=config['columns'])
     plot_cnt=0;
-    m_page.add_plot(plot_n_issues_per_user_pie(users, issues_per_user),col=plot_cnt%config['columns'])
+    m_page.add_plot(plot_n_issues_per_user_pie(f'PIE_chart_{plot_cnt}', users, issues_per_user),col=plot_cnt%config['columns'])
     plot_cnt += 1
     m_page.add_js('gs_people.js')
 
     create(m_page)
     print('done')
 
-def plot_n_issues_per_user_pie(users, issues_per_user):
+def plot_n_issues_per_user_pie(name, users, issues_per_user):
     """ returns a single plot (gs_pie_plot) with as parts each user's number of open issues
 
     Args:
@@ -82,7 +82,7 @@ def plot_n_issues_per_user_pie(users, issues_per_user):
     #print(parts)
 
     # plot
-    plot = graphic_data_classes.gs_pie_plot(title='Open issues per user')
+    plot = graphic_data_classes.gs_pie_plot(name,title='Open issues per user')
     for part in parts:
        plot.add_part(part[0],part[1])
 
@@ -112,8 +112,7 @@ def create(page):
     ##################
 
     mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/pie_chart.js'))
-    #print(yaml.dump(page))
-    s_js=mytemplate.render(plots=page.plots)
+    s_js=mytemplate.render(plots=page.gs_plots.get_plots_of_type(graphic_data_classes.gs_plot_type.PIE).plots)
     with open('gs_people.js', 'w') as f:
         f.write(s_js)
 

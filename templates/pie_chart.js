@@ -1,6 +1,6 @@
 % for plot in plots:
 
-var chart${loop.index} = c3.generate(
+var ${plot.name} = c3.generate(
 {
     data: 
     {
@@ -50,10 +50,11 @@ var chart${loop.index} = c3.generate(
     //                 '#bcbd22', '#dbdb8d' 
     //             ]
     // },
-    bindto: '#chart${loop.index}'
+    bindto: '#${plot.name}'
 });
+
+setTimeout(function () {${plot.name}.load(); }, 5000);
 
 % endfor
 
-setTimeout(function () {chart.load(); }, 1000);
 

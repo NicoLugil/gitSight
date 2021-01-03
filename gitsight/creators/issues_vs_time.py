@@ -24,9 +24,9 @@ def create_page(users,issues_per_user,config):
     print('time...', end='')
     m_page = graphic_data_classes.gs_page(title='Evolution of issues in time',n_columns=config['columns'])
     plot_cnt=0;
-    m_page.add_plot(plot_one_user(issues_per_user[-1],'Project'),col=plot_cnt%config['columns'])
+    m_page.add_plot(plot_one_user(f'LINE_chart_{plot_cnt}', issues_per_user[-1],'Project'),col=plot_cnt%config['columns'])
     plot_cnt += 1
-    m_page.add_plot(plot_one_user(issues_per_user[None],'Unassigned'),col=plot_cnt%config['columns'])
+    m_page.add_plot(plot_one_user(f'LINE_chart_{plot_cnt}', issues_per_user[None],'Unassigned'),col=plot_cnt%config['columns'])
     plot_cnt += 1
     m_page.add_js('gs_time.js')
 
@@ -35,15 +35,16 @@ def create_page(users,issues_per_user,config):
     for user_id,user_issues in sorted_ipu.items():
         if user_id==None or user_id==-1:
             continue
-        m_page.add_plot(plot_one_user(user_issues,users.get_user_by_id(user_id).name),col=plot_cnt%config['columns'])
+        m_page.add_plot(plot_one_user(f'LINE_chart_{plot_cnt}',user_issues,users.get_user_by_id(user_id).name),col=plot_cnt%config['columns'])
         plot_cnt += 1
     create(m_page)
     print('done')
 
-def plot_one_user(issues,title):
+def plot_one_user(name,issues,title):
     """ returns a single plot (gs_line_plot) for the given issues. 
 
     Args:
+        name: name of plot
         issues for this user (gs_issues)
         title: title to use
 
@@ -52,7 +53,7 @@ def plot_one_user(issues,title):
         gs_line_plot object
     """
 
-    plot = graphic_data_classes.gs_line_plot(x_type='timeseries',x_count=10,title=title,default_type='line')
+    plot = graphic_data_classes.gs_line_plot(name,x_type='timeseries',x_count=10,title=title,default_type='line')
 
     xy_remaining=bucketize_dates(create_open_issues_vs_time_list(issues.issues),'last')
     plot.add_xy_line(xy_remaining,type_override='area')
@@ -235,9 +236,7 @@ def create(page):
     ##################
 
     mytemplate = Template(filename=os.path.join(os.environ['GITSIGHT_HOME'],'templates/multi_xy_line_chart.js'))
-    #s_js=mytemplate.render(lines=lines, columns=x+xo+xc+y+yo+yc, x_axis=x_axis, chart=chart)
-    #print(yaml.dump(page))
-    s_js=mytemplate.render(plots=page.plots)
+    s_js=mytemplate.render(plots=page.gs_plots.get_plots_of_type(graphic_data_classes.gs_plot_type.LINE).plots)
     with open('gs_time.js', 'w') as f:
         f.write(s_js)
 

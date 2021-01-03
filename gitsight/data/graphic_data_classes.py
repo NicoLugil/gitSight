@@ -3,12 +3,12 @@ from enum import Enum, auto
 
 class gs_page:
     """
-    A class bunding data like gs_line_plot for multiple plots on 1 page
+    A class bunding data for multiple plots on 1 page
     """
 
     def __init__(self, title='<Page Title>', n_columns=1):
         self.title=title
-        self.plots=[]   # will be array of gs_line_plot
+        self.gs_plots=gs_plots()
         self.col=[]     # for each plot, in which column it needs to go
         self.js=[]     # array of .js files to add
         allowed_n_columns=[1,2,3,4,6,12]
@@ -17,25 +17,52 @@ class gs_page:
         self.n_col=n_columns   # columns
 
     def add_plot(self, plot, col=0):
-        self.plots.append(plot)
+        self.gs_plots.add_plot(plot)
         self.col.append(col)
 
     def get_number_of_plots(self):
-        return len(self.plots)
+        return self.gs_plots.get_number_of_plots()
 
     def add_js(self, js):
         self.js.append(js)
 
+class gs_plots:
+    """
+    A class to store and manipulate an array of plots
+    """
+
+    def __init__(self):
+        self.plots=[]
+
+    def add_plot(self, plot):
+        self.plots.append(plot)
+
+    def get_number_of_plots(self):
+        return len(self.plots)
+
+    def get_plots_of_type(self, wanted_type):
+        """
+        Returns a new gs_plots object with only the plots of the given type (gs_plot_type)
+        """
+
+        new_plots = gs_plots()
+        for p in self.plots:
+            if p.plot_type==wanted_type:
+                new_plots.add_plot(p)
+        return new_plots
+
 class gs_plot_type(Enum):
     LINE = auto()
     PIE = auto()
+
+# TODO: base class for plots
 
 class gs_line_plot:
     """ 
     A class that bundles all data related to (multiple) to be plotted lines (single plot)
     """
 
-    def __init__(self, x_type='timeseries', x_count=10, title='<Plot Title>', default_type='line'):
+    def __init__(self, name, x_type='timeseries', x_count=10, title='<Plot Title>', default_type='line'):
         """ gs_line constructor
 
         Args:
@@ -43,6 +70,7 @@ class gs_line_plot:
             x_count: number of ticks
             default_type: the default style used for all 'lines' (see c3.js data.type for possibilities)
         """
+        self.name=name
         self.plot_type=gs_plot_type.LINE
         self.x_type=x_type
         if x_type=='timeseries':
@@ -124,12 +152,13 @@ class gs_pie_plot:
     A class that bundles all data related to a single pie plot
     """
 
-    def __init__(self, title='<Plot Title>'):
+    def __init__(self, name, title='<Plot Title>'):
         """ gs_pie_plot constructor
 
         Args:
             title: title of the plot
         """
+        self.name=name
         self.plot_type=gs_plot_type.PIE
         self.title=title
         self.parts=[]

@@ -57,9 +57,9 @@ html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif;}
         <h1 class="w3-text-black">${page.title}</h1>
 
         <div class="w3-dropdown-hover w3-light-grey">
-          <button class="w3-button">Quick user navigation</button>
+          <button class="w3-button">Navigation</button>
           <div class="w3-dropdown-content w3-bar-block w3-card-4 gs-scroll">
-            % for plot in page.plots:
+            % for plot in page.gs_plots.plots:
             <a href="#${plot.title}" class="w3-bar-item w3-button">${plot.title}</a>
             % endfor
           </div>
@@ -68,11 +68,11 @@ html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif;}
 
       % for col in range(page.n_col):
       <div class="w3-col s${int(round(12/page.n_col))} w3-center">
-        % for plot in page.plots:
+        % for plot in page.gs_plots.plots:
           %if page.col[loop.index]==col:
         <div class="w3-container" id="${plot.title}">
           <h4 class="w3-text-black">${plot.title}</h4>
-          <div id="chart${loop.index}" class="w3-margin"></div>
+          <div id="${plot.name}" class="w3-margin"></div>
         </div>
           %endif
         %endfor
