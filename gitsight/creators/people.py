@@ -68,6 +68,7 @@ def plot_n_issues_per_user_pie(name, users, issues_per_user):
     index_to_start_deletion=-1
     for part in parts:
         total += part[1]
+    #print(f"total={total}")
     #print(f'total={total}')
     for idx, part in enumerate(parts):
         #print(f'{idx}: {part[0]} {part[1]/total}')
@@ -76,7 +77,8 @@ def plot_n_issues_per_user_pie(name, users, issues_per_user):
             if index_to_start_deletion==-1:
                 index_to_start_deletion=idx
     #print(f'starting deletion at {parts[index_to_start_deletion]}')
-    parts[index_to_start_deletion:]=[]
+    if index_to_start_deletion != -1:
+        parts[index_to_start_deletion:]=[]
     if other>0:
         parts.append(['Others',other])
     #print(parts)
